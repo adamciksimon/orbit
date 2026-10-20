@@ -7,14 +7,18 @@ on:
       - "orbit-web/**"
       - ".github/workflows/deploy-web.yml"
   workflow_dispatch:
+  # Called by release-app.yml after it publishes a new DMG.
+  workflow_call:
 
-concurrency:
-  group: deploy-web
-  cancel-in-progress: false
+permissions:
+  contents: read
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    concurrency:
+      group: deploy-web
+      cancel-in-progress: false
     defaults:
       run:
         working-directory: orbit-web
@@ -28,6 +32,19 @@ jobs:
           cache: true
 
       - run: vp check
+
+      # The DMG isn't in git: the site always serves the latest GitHub release.
+      - name: Fetch latest app release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag=$(gh release view -R "$GITHUB_REPOSITORY" --json tagName --jq .tagName)
+          gh release download "$tag" -R "$GITHUB_REPOSITORY" --pattern Orbit.dmg --dir public/downloads --clobber
+          bytes=$(stat -c %s public/downloads/Orbit.dmg)
+          echo "NUXT_PUBLIC_APP_VERSION=${tag#v}" >> "$GITHUB_ENV"
+          echo "NUXT_PUBLIC_APP_SIZE=$(awk -v b="$bytes" 'BEGIN { printf "%.1f MB", b / 1048576 }')" >> "$GITHUB_ENV"
+          echo "Serving Orbit $tag ($bytes bytes)"
+
       - run: vp run generate
 
       - name: Deploy to Cloudflare Workers

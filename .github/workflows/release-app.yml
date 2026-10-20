@@ -1,0 +1,36 @@
+name: Release app
+
+# Push a version tag to release: git tag v0.2 && git push origin v0.2
+on:
+  push:
+    tags: ["v*"]
+
+jobs:
+  build:
+    # The project needs Xcode 27; this image is in public preview on GitHub.
+    runs-on: xcode-27
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7.0.1
+
+      - name: Build Orbit.dmg
+        run: |
+          export DEVELOPER_DIR="$(xcode-select -p)"
+          xcodebuild -version
+          AD_HOC=1 APP_VERSION="${GITHUB_REF_NAME#v}" BUILD_NUMBER="$GITHUB_RUN_NUMBER" \
+            orbit-app/scripts/package.sh
+
+      - name: Publish GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" orbit-app/dist/Orbit.dmg \
+            --title "Orbit ${GITHUB_REF_NAME#v}" --generate-notes
+
+  deploy-web:
+    needs: build
+    permissions:
+      contents: read
+    uses: ./.github/workflows/deploy-web.yml
+    secrets: inherit

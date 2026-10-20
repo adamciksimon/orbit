@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const version = "0.1";
+const { appVersion: version, appSize: size } = useRuntimeConfig().public;
 const downloadUrl = "/downloads/Orbit.dmg";
 
 useSeoMeta({
@@ -90,7 +90,7 @@ const steps = [
 const faqs = [
   {
     q: "What do I need to run it?",
-    a: "A Mac with Apple silicon running macOS 15.6 or later. The download is about 3.5 MB.",
+    a: `A Mac with Apple silicon running macOS 15.6 or later. The download is about ${size}.`,
   },
   {
     q: "Why does macOS ask for my password on first launch?",
@@ -157,7 +157,7 @@ const openFaq = ref<number | null>(0);
           </a>
           <a href="#how" class="btn btn--ghost">See how it works</a>
         </div>
-        <p class="meta">Apple silicon · macOS 15.6 or later · 3.5 MB</p>
+        <p class="meta">Apple silicon · macOS 15.6 or later · {{ size }}</p>
 
         <!-- App window mock -->
         <div
@@ -363,7 +363,7 @@ const openFaq = ref<number | null>(0);
       <section class="final">
         <OrbitLogo :size="120" class="final__icon" />
         <h2>Put your localhost in orbit.</h2>
-        <p>A 3.5 MB download for Apple silicon Macs.</p>
+        <p>A {{ size }} download for Apple silicon Macs.</p>
         <a :href="downloadUrl" class="btn btn--primary" download>Download Orbit {{ version }}</a>
       </section>
     </main>

@@ -23,6 +23,16 @@ The app is not sandboxed: it runs `mkcert`, writes to `~/.localcan`, and listens
 
 ## Releasing
 
+Push a version tag from the repo root:
+
+```bash
+git tag v0.2 && git push origin v0.2
+```
+
+The `Release app` workflow builds an ad hoc signed `Orbit.dmg` (version taken from the tag), publishes it as a GitHub release, and redeploys the website, which always serves the latest release.
+
+To build locally instead:
+
 ```bash
 scripts/package.sh
 ```

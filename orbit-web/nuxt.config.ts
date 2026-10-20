@@ -3,6 +3,14 @@ export default defineNuxtConfig({
   compatibilityDate: "2025-07-15",
   devtools: { enabled: true },
   css: ["~/assets/css/main.css"],
+  runtimeConfig: {
+    public: {
+      // The deploy workflow sets these from the latest GitHub release
+      // (NUXT_PUBLIC_APP_VERSION, NUXT_PUBLIC_APP_SIZE).
+      appVersion: "0.1",
+      appSize: "3.5 MB",
+    },
+  },
   app: {
     head: {
       htmlAttrs: { lang: "en" },

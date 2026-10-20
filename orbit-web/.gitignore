@@ -25,3 +25,6 @@ logs
 
 # Wrangler
 .wrangler
+
+# Filled from the latest GitHub release at deploy time
+public/downloads/

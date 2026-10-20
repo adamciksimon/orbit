@@ -6,7 +6,10 @@
 #   NOTARY_PROFILE=orbit-notary scripts/package.sh
 #
 # Without DEVELOPER_ID the app is signed for development only, and recipients
-# must approve it once in System Settings › Privacy & Security.
+# must approve it once in System Settings › Privacy & Security. AD_HOC=1 signs
+# ad hoc instead, for machines without a signing certificate (CI).
+#
+# APP_VERSION and BUILD_NUMBER override the version in the Xcode project.
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
@@ -34,13 +37,19 @@ if [[ -n "${DEVELOPER_ID:-}" ]]; then
 elif [[ -n "${NOTARY_PROFILE:-}" ]]; then
     echo "NOTARY_PROFILE needs DEVELOPER_ID: only Developer ID builds can be notarized." >&2
     exit 1
+elif [[ -n "${AD_HOC:-}" ]]; then
+    signing_args=(CODE_SIGN_STYLE=Manual CODE_SIGN_IDENTITY=- DEVELOPMENT_TEAM=)
 fi
+
+version_args=()
+[[ -n "${APP_VERSION:-}" ]] && version_args+=("MARKETING_VERSION=$APP_VERSION")
+[[ -n "${BUILD_NUMBER:-}" ]] && version_args+=("CURRENT_PROJECT_VERSION=$BUILD_NUMBER")
 
 # The bundled mkcert is arm64-only, so the app is built for Apple silicon.
 echo "Building Orbit.app…"
 xcodebuild -project Orbit.xcodeproj -scheme Orbit -configuration Release \
     -derivedDataPath "$BUILD_DIR" ARCHS=arm64 ONLY_ACTIVE_ARCH=NO \
-    ${signing_args[@]+"${signing_args[@]}"} clean build | grep -E "error:|BUILD" || true
+    ${signing_args[@]+"${signing_args[@]}"} ${version_args[@]+"${version_args[@]}"} clean build | grep -E "error:|BUILD" || true
 [[ -d "$APP" ]] || { echo "Build failed." >&2; exit 1; }
 codesign --verify --deep --strict "$APP"
 

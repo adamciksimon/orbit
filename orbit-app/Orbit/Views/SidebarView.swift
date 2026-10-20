@@ -68,6 +68,7 @@ private struct StatusView: View {
         VStack(alignment: .leading, spacing: 8) {
             proxyStatus
             trustStatus
+            sharingStatus
             if let error = model.errorMessage {
                 StatusLine(color: .red, text: error)
             }
@@ -92,6 +93,32 @@ private struct StatusView: View {
                 StatusLine(color: .red, text: message)
                 Button("Retry") { model.restartProxy() }
                     .controlSize(.small)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var sharingStatus: some View {
+        @Bindable var model = model
+
+        Divider()
+        Toggle("Share on local network", isOn: $model.isSharingOnNetwork)
+            .toggleStyle(.switch)
+            .controlSize(.mini)
+            .help("Let phones, tablets and other computers on this network open your .local domains.")
+
+        if model.isSharingOnNetwork {
+            VStack(alignment: .leading, spacing: 4) {
+                if model.sharedAddresses.isEmpty {
+                    StatusLine(color: .secondary, text: "Not connected to a network")
+                } else {
+                    StatusLine(color: .blue, text: "Shared at \(model.sharedAddresses.joined(separator: ", "))")
+                }
+                ShareLink(item: AppModel.rootCertificateURL) {
+                    Text("Share Root Certificate…")
+                }
+                .controlSize(.small)
+                .help("Install this on other devices so they trust Orbit's HTTPS certificates.")
             }
         }
     }

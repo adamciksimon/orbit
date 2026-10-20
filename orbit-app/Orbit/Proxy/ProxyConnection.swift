@@ -43,6 +43,10 @@ nonisolated final class ProxyConnection: @unchecked Sendable {
         self.onClose = onClose
     }
 
+    var isFromThisMac: Bool {
+        client.endpoint.isLoopback
+    }
+
     func start() {
         client.stateUpdateHandler = { [weak self] state in
             switch state {

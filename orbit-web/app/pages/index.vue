@@ -105,8 +105,8 @@ const faqs = [
     a: "Projects live in ~/.localcan/projects.bin, and the local CA and issued certificate live under ~/.localcan as well. Nothing leaves your machine.",
   },
   {
-    q: "Is any of my traffic exposed to the network?",
-    a: ".local records point to 127.0.0.1, and /etc/hosts entries do too, so the domains only resolve on your own Mac.",
+    q: "Can other devices on my network open my domains?",
+    a: "Not by default. Your domains resolve only on your own Mac, and the proxy only accepts connections from it. Turn on Share on local network to open your .local domains from a phone or another computer on the same network; share Orbit's root certificate with those devices so they trust it.",
   },
 ];
 

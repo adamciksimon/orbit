@@ -18,6 +18,10 @@ enum TrustState: Equatable {
 final class AppModel {
     private static let configURL = CertificateAuthority.dataDirectory.appending(path: "projects.bin")
     private static let proxyPort: UInt16 = 443
+    private static let sharingKey = "shareOnLocalNetwork"
+
+    /// The CA certificate to install on other devices so they trust Orbit.
+    static let rootCertificateURL = CertificateAuthority.rootCertificateURL
 
     var config = ProjectsConfig.empty {
         didSet { configDidChange(from: oldValue) }
@@ -30,6 +34,17 @@ final class AppModel {
     /// Names /etc/hosts points at this Mac.
     private(set) var hostsFileNames: Set<String> = []
     private(set) var isUpdatingHostsFile = false
+
+    /// Whether other devices on the network can open the `.local` domains.
+    var isSharingOnNetwork = UserDefaults.standard.bool(forKey: sharingKey) {
+        didSet {
+            guard isSharingOnNetwork != oldValue else { return }
+            UserDefaults.standard.set(isSharingOnNetwork, forKey: Self.sharingKey)
+            applyRoutes()
+        }
+    }
+    /// This Mac's IPv4 addresses on the network while sharing.
+    private(set) var sharedAddresses: [String] = []
 
     @ObservationIgnored private var isConfigReady = false
     @ObservationIgnored private var saveTask: Task<Void, Never>?
@@ -45,7 +60,12 @@ final class AppModel {
             Task { @MainActor in self.proxyStatus = status }
         }
     )
-    @ObservationIgnored private let advertiser = LocalHostnameAdvertiser()
+    @ObservationIgnored private lazy var advertiser = LocalHostnameAdvertiser(
+        onSharedAddresses: { [weak self] addresses in
+            guard let self else { return }
+            Task { @MainActor in self.sharedAddresses = addresses }
+        }
+    )
 
     var selectedProject: Project? {
         config.projects.first { $0.id == config.selectedProjectId }
@@ -183,7 +203,8 @@ final class AppModel {
     private func applyRoutes() {
         let routes = config.routes
         proxy.setRoutes(routes)
-        advertiser.update(hostnames: Set(routes.map(\.domain).filter(Domain.isMulticast)))
+        proxy.setShared(isSharingOnNetwork)
+        advertiser.update(hostnames: Set(routes.map(\.domain).filter(Domain.isMulticast)), shared: isSharingOnNetwork)
 
         // Reissue the certificate once edits settle if the domain set changed.
         let hostnames = routes.map(\.domain)

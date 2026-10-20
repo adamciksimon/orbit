@@ -24,7 +24,9 @@ nonisolated final class ProxyServer: @unchecked Sendable {
 
     private var routes: [String: UInt16] = [:]
     private var listener: NWListener?
+    private var identity: SecIdentity?
     private var pendingIdentity: SecIdentity?
+    private var isShared = false
     private var isReplacingListener = false
     private var connections: [ObjectIdentifier: ProxyConnection] = [:]
 
@@ -40,6 +42,24 @@ nonisolated final class ProxyServer: @unchecked Sendable {
         let portsByDomain = Dictionary(routes.map { ($0.domain, $0.port) }) { _, last in last }
         queue.async {
             self.routes = portsByDomain
+        }
+    }
+
+    /// Shared, the proxy accepts connections from other devices on the
+    /// network; otherwise only from this Mac.
+    func setShared(_ shared: Bool) {
+        queue.async {
+            guard shared != self.isShared else { return }
+            self.isShared = shared
+            if !shared {
+                for connection in self.connections.values where !connection.isFromThisMac {
+                    connection.close()
+                }
+            }
+            if let identity = self.identity {
+                self.pendingIdentity = identity
+                self.replaceListener()
+            }
         }
     }
 
@@ -84,6 +104,7 @@ nonisolated final class ProxyServer: @unchecked Sendable {
     private func startPendingListener() {
         guard let identity = pendingIdentity else { return }
         pendingIdentity = nil
+        self.identity = identity
         onStatus(.starting)
 
         let tls = NWProtocolTLS.Options()
@@ -97,6 +118,9 @@ nonisolated final class ProxyServer: @unchecked Sendable {
 
         let parameters = NWParameters(tls: tls, tcp: tcp)
         parameters.allowLocalEndpointReuse = true
+        if !isShared {
+            parameters.requiredInterfaceType = .loopback
+        }
 
         let listener: NWListener
         do {
@@ -127,6 +151,10 @@ nonisolated final class ProxyServer: @unchecked Sendable {
     }
 
     private func accept(_ client: NWConnection) {
+        guard isShared || client.endpoint.isLoopback else {
+            client.cancel()
+            return
+        }
         let connection = ProxyConnection(
             client: client,
             queue: queue,
@@ -137,5 +165,20 @@ nonisolated final class ProxyServer: @unchecked Sendable {
         )
         connections[ObjectIdentifier(connection)] = connection
         connection.start()
+    }
+}
+
+extension NWEndpoint {
+    /// Whether the endpoint is a loopback address (including IPv4-mapped ones).
+    nonisolated var isLoopback: Bool {
+        guard case let .hostPort(host, _) = self else { return false }
+        switch host {
+        case let .ipv4(address):
+            return address.isLoopback
+        case let .ipv6(address):
+            return address.isLoopback || address.asIPv4?.isLoopback == true
+        default:
+            return false
+        }
     }
 }

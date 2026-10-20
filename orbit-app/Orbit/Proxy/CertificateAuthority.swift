@@ -44,7 +44,10 @@ actor CertificateAuthority {
     private let caRoot = dataDirectory.appending(path: "mkcert", directoryHint: .isDirectory)
     private let tlsDirectory = dataDirectory.appending(path: "tls", directoryHint: .isDirectory)
     private var identityURL: URL { tlsDirectory.appending(path: "proxy.p12") }
-    private var rootCertificateURL: URL { caRoot.appending(path: "rootCA.pem") }
+    private var rootCertificateURL: URL { Self.rootCertificateURL }
+
+    /// The CA certificate other devices install to trust Orbit's domains.
+    nonisolated static let rootCertificateURL = dataDirectory.appending(path: "mkcert/rootCA.pem")
 
     private var mkcertURL: URL {
         get throws {

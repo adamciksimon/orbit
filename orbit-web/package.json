@@ -16,7 +16,8 @@
     "vue-router": "^5.4.0"
   },
   "devDependencies": {
-    "vite-plus": "catalog:"
+    "vite-plus": "catalog:",
+    "wrangler": "^4.151.2"
   },
   "devEngines": {
     "packageManager": {

@@ -1,0 +1,12 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "orbit",
+  "account_id": "0dd506d1029173a13a7aa15e934681da",
+  "compatibility_date": "2026-10-01",
+  // Static site: `nuxt generate` output, served straight from Workers static assets.
+  "assets": {
+    "directory": ".output/public",
+    "not_found_handling": "404-page",
+  },
+  "routes": [{ "pattern": "orbit.simon-studio.cc", "custom_domain": true }],
+}

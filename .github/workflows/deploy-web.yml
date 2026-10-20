@@ -1,0 +1,36 @@
+name: Deploy website
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "orbit-web/**"
+      - ".github/workflows/deploy-web.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-web
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: orbit-web
+    steps:
+      - uses: actions/checkout@v7.0.1
+
+      - uses: voidzero-dev/setup-vp@v1.21.2
+        with:
+          working-directory: orbit-web
+          node-version: "24"
+          cache: true
+
+      - run: vp check
+      - run: vp run generate
+
+      - name: Deploy to Cloudflare Workers
+        run: vp exec wrangler deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}

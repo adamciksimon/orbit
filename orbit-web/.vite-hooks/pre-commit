@@ -1,1 +1,1 @@
-vp staged
+cd orbit-web && vp staged

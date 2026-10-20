@@ -21,6 +21,7 @@ nonisolated final class ProxyServer: @unchecked Sendable {
 
     private let queue = DispatchQueue(label: "co.outloud.Orbit.proxy")
     private let onStatus: @Sendable (Status) -> Void
+    private var redirector: HTTPRedirectServer!
 
     private var routes: [String: UInt16] = [:]
     private var listener: NWListener?
@@ -32,10 +33,18 @@ nonisolated final class ProxyServer: @unchecked Sendable {
 
     init(
         port: UInt16,
-        onStatus: @escaping @Sendable (Status) -> Void
+        redirectPort: UInt16,
+        onStatus: @escaping @Sendable (Status) -> Void,
+        onRedirectFailure: @escaping @Sendable (String) -> Void
     ) {
         self.port = port
         self.onStatus = onStatus
+        redirector = HTTPRedirectServer(
+            port: redirectPort,
+            queue: queue,
+            isRouted: { [unowned self] host in routes[host] != nil },
+            onFailure: onRedirectFailure
+        )
     }
 
     func setRoutes(_ routes: [ProxyRoute]) {
@@ -77,6 +86,7 @@ nonisolated final class ProxyServer: @unchecked Sendable {
             pendingIdentity = nil
             listener?.cancel()
             listener = nil
+            redirector.stop()
             for connection in connections.values {
                 connection.close()
             }
@@ -148,6 +158,7 @@ nonisolated final class ProxyServer: @unchecked Sendable {
         }
         self.listener = listener
         listener.start(queue: queue)
+        redirector.start(shared: isShared)
     }
 
     private func accept(_ client: NWConnection) {

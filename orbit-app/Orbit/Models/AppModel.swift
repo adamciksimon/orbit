@@ -18,6 +18,7 @@ enum TrustState: Equatable {
 final class AppModel {
     private static let configURL = CertificateAuthority.dataDirectory.appending(path: "projects.bin")
     private static let proxyPort: UInt16 = 443
+    private static let redirectPort: UInt16 = 80
     private static let sharingKey = "shareOnLocalNetwork"
 
     /// The CA certificate to install on other devices so they trust Orbit.
@@ -55,9 +56,14 @@ final class AppModel {
     @ObservationIgnored private let certificateAuthority = CertificateAuthority()
     @ObservationIgnored private lazy var proxy = ProxyServer(
         port: Self.proxyPort,
+        redirectPort: Self.redirectPort,
         onStatus: { [weak self] status in
             guard let self else { return }
             Task { @MainActor in self.proxyStatus = status }
+        },
+        onRedirectFailure: { [weak self] message in
+            guard let self else { return }
+            Task { @MainActor in self.errorMessage = message }
         }
     )
     @ObservationIgnored private lazy var advertiser = LocalHostnameAdvertiser(

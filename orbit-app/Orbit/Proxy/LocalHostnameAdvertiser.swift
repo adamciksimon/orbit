@@ -154,6 +154,11 @@ nonisolated final class LocalHostnameAdvertiser: @unchecked Sendable {
                 let bytes = socketAddress.withMemoryRebound(to: sockaddr_in.self, capacity: 1) {
                     withUnsafeBytes(of: $0.pointee.sin_addr) { Array($0) }
                 }
+                // 169.254.x.x is self-assigned on a link with no network
+                // (an idle Thunderbolt bridge, say); nothing else can reach it.
+                if bytes[0] == 169, bytes[1] == 254 {
+                    continue
+                }
                 let description = bytes.map(String.init).joined(separator: ".")
                 addresses.append(Address(interfaceIndex: index, type: kDNSServiceType_A, bytes: bytes, description: description))
             case AF_INET6:

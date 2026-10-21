@@ -17,16 +17,19 @@ struct ProjectDetailView: View {
                 Section {
                     TextField("Name", text: project.name, prompt: Text("Project name"))
                         .labelsHidden()
-                        .font(.title2.weight(.semibold))
+                        .font(.title.weight(.bold))
                         .textFieldStyle(.plain)
                 }
 
                 Section {
                     if project.wrappedValue.settings.proxiedPaths.isEmpty {
-                        Text("No proxies yet. Add one to route a domain to your local server.")
-                            .foregroundStyle(.secondary)
-                            .frame(maxWidth: .infinity, alignment: .center)
-                            .padding(.vertical, 12)
+                        VStack(spacing: 10) {
+                            OrbitMark(size: 56)
+                            Text("No proxies yet. Add one to route a domain to your local server.")
+                                .foregroundStyle(.secondary)
+                        }
+                        .frame(maxWidth: .infinity, alignment: .center)
+                        .padding(.vertical, 16)
                     } else {
                         ForEach(project.settings.proxiedPaths) { proxy in
                             ProxyRow(proxy: proxy, isDuplicate: model.duplicateDomains.contains(Domain.served(proxy.wrappedValue.domain))) {
@@ -46,6 +49,7 @@ struct ProjectDetailView: View {
                 }
             }
             .formStyle(.grouped)
+            .scrollContentBackground(.hidden)
             .navigationTitle(project.wrappedValue.name)
             .toolbar {
                 ToolbarItem {
@@ -89,15 +93,17 @@ private struct ProxyRow: View {
             VStack(alignment: .leading, spacing: 8) {
                 HStack(spacing: 12) {
                     TextField("Domain", text: $proxy.domain, prompt: Text("app.example.com"))
+                        .spaceField(isInvalid: !isValidDomain)
                     TextField("Port", value: $proxy.port, format: .number.grouping(.never), prompt: Text("3000"))
-                        .frame(width: 80)
+                        .spaceField(isInvalid: !isValidPort)
+                        .frame(width: 88)
                 }
                 .labelsHidden()
-                .textFieldStyle(.roundedBorder)
 
                 HStack(spacing: 6) {
                     if isValidDomain, model.resolvesLocally(domain), let url = URL(string: "https://\(domain)") {
                         Link(url.absoluteString, destination: url)
+                            .foregroundStyle(Theme.aurora)
                             .pointerStyle(.link)
                     } else {
                         Text("https://\(domain)")

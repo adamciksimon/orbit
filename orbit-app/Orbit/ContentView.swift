@@ -19,11 +19,14 @@ struct ContentView: View {
                 ProjectDetailView(projectID: project.id)
                     .id(project.id)
             } else {
-                ContentUnavailableView(
-                    "No Project Selected",
-                    systemImage: "point.3.connected.trianglepath.dotted",
-                    description: Text("Select a project from the sidebar, or create one with ⌘N.")
-                )
+                ContentUnavailableView {
+                    VStack(spacing: 16) {
+                        OrbitMark(size: 120)
+                        Text("No Project Selected")
+                    }
+                } description: {
+                    Text("Select a project from the sidebar, or create one with ⌘N.")
+                }
             }
         }
     }

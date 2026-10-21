@@ -17,6 +17,9 @@ struct OrbitApp: App {
             ContentView()
                 .environment(appDelegate.model)
                 .frame(minWidth: 720, minHeight: 480)
+                .containerBackground(for: .window) { SpaceBackground() }
+                .preferredColorScheme(.dark)
+                .fontDesign(.rounded)
         }
         .defaultSize(width: 1000, height: 750)
         .commands {

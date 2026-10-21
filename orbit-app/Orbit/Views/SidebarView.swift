@@ -17,7 +17,7 @@ struct SidebarView: View {
                     Label {
                         Text(project.name)
                     } icon: {
-                        ProjectBadge(name: project.name)
+                        ProjectBadge(name: project.name, color: Theme.planetColor(for: project.id))
                     }
                     .tag(Optional(project.id))
                     .contextMenu {
@@ -27,6 +27,17 @@ struct SidebarView: View {
                     }
                 }
             }
+        }
+        .scrollContentBackground(.hidden)
+        .safeAreaInset(edge: .top) {
+            HStack(spacing: 8) {
+                OrbitMark(size: 36)
+                Text("Orbit")
+                    .font(.title2.weight(.bold))
+                Spacer()
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 6)
         }
         .onDeleteCommand {
             if let id = model.config.selectedProjectId {
@@ -51,16 +62,25 @@ struct SidebarView: View {
     }
 }
 
-/// First-letter tile, like the original sidebar's project buttons.
+/// A small planet with the project's first letter.
 struct ProjectBadge: View {
     let name: String
+    let color: Color
 
     var body: some View {
         Text(name.first.map { String($0).uppercased() } ?? "?")
-            .font(.caption.weight(.semibold))
-            .foregroundStyle(.white)
+            .font(.system(size: 10, weight: .heavy, design: .rounded))
+            .foregroundStyle(Theme.space)
             .frame(width: 20, height: 20)
-            .background(.tint, in: RoundedRectangle(cornerRadius: 5))
+            .background {
+                Circle().fill(
+                    RadialGradient(
+                        colors: [color.mix(with: .white, by: 0.45), color],
+                        center: UnitPoint(x: 0.35, y: 0.3), startRadius: 0, endRadius: 14
+                    )
+                )
+            }
+            .shadow(color: color.opacity(0.5), radius: 4)
     }
 }
 
@@ -78,17 +98,18 @@ private struct StatusView: View {
         }
         .font(.caption)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(10)
-        .background(.quaternary.opacity(0.5), in: RoundedRectangle(cornerRadius: 8))
+        .padding(12)
+        .background(Theme.card.opacity(0.85), in: RoundedRectangle(cornerRadius: 12))
+        .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(.white.opacity(0.07)))
     }
 
     @ViewBuilder
     private var proxyStatus: some View {
         switch model.proxyStatus {
         case let .running(port):
-            StatusLine(color: .green, text: "Proxy running on :\(port)")
+            StatusLine(color: Theme.aurora, text: "Proxy running on :\(port)")
         case .starting:
-            StatusLine(color: .yellow, text: "Proxy starting…")
+            StatusLine(color: Theme.sun, text: "Proxy starting…")
         case .stopped:
             StatusLine(color: .secondary, text: "Proxy stopped")
         case let .failed(message):
@@ -115,7 +136,7 @@ private struct StatusView: View {
                 if model.sharedAddresses.isEmpty {
                     StatusLine(color: .secondary, text: "Not connected to a network")
                 } else {
-                    StatusLine(color: .blue, text: "Shared at \(model.sharedAddresses.joined(separator: ", "))")
+                    StatusLine(color: Theme.planet, text: "Shared at \(model.sharedAddresses.joined(separator: ", "))")
                 }
                 ShareLink(item: AppModel.rootCertificateURL) {
                     Text("Share Root Certificate…")
@@ -130,14 +151,14 @@ private struct StatusView: View {
     private var trustStatus: some View {
         switch model.trustState {
         case .trusted:
-            StatusLine(color: .green, text: "Local CA trusted")
+            StatusLine(color: Theme.aurora, text: "Local CA trusted")
         case .unknown:
             StatusLine(color: .secondary, text: "Checking certificates…")
         case .installing:
-            StatusLine(color: .yellow, text: "Waiting for approval…")
+            StatusLine(color: Theme.sun, text: "Waiting for approval…")
         case .untrusted:
             VStack(alignment: .leading, spacing: 4) {
-                StatusLine(color: .orange, text: "Local CA not trusted")
+                StatusLine(color: Theme.sun, text: "Local CA not trusted")
                 Button("Trust Certificate…") {
                     Task { await model.trustRootCertificate() }
                 }
@@ -157,7 +178,7 @@ private struct SupportButton: View {
         }
         .buttonStyle(.bordered)
         .controlSize(.large)
-        .tint(.orange)
+        .tint(Theme.sun)
         .pointerStyle(.link)
         .help("Orbit is made by one person. A coffee keeps it going.")
     }
@@ -172,6 +193,7 @@ private struct StatusLine: View {
             Circle()
                 .fill(color)
                 .frame(width: 7, height: 7)
+                .shadow(color: color.opacity(0.8), radius: 3)
             Text(text)
                 .foregroundStyle(.secondary)
                 .lineLimit(3)

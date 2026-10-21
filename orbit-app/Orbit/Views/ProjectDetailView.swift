@@ -98,6 +98,7 @@ private struct ProxyRow: View {
                 HStack(spacing: 6) {
                     if isValidDomain, model.resolvesLocally(domain), let url = URL(string: "https://\(domain)") {
                         Link(url.absoluteString, destination: url)
+                            .pointerStyle(.link)
                     } else {
                         Text("https://\(domain)")
                     }

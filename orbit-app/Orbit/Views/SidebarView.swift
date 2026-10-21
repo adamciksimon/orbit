@@ -42,8 +42,11 @@ struct SidebarView: View {
             }
         }
         .safeAreaInset(edge: .bottom) {
-            StatusView()
-                .padding(12)
+            VStack(spacing: 8) {
+                StatusView()
+                SupportButton()
+            }
+            .padding(12)
         }
     }
 }
@@ -72,12 +75,6 @@ private struct StatusView: View {
             if let error = model.errorMessage {
                 StatusLine(color: .red, text: error)
             }
-            Divider()
-            Link(destination: AppModel.supportURL) {
-                Label("Support Orbit on Ko-fi", systemImage: "cup.and.saucer.fill")
-            }
-            .foregroundStyle(.secondary)
-            .help("Orbit is made by one person. A coffee keeps it going.")
         }
         .font(.caption)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -147,6 +144,22 @@ private struct StatusView: View {
                 .controlSize(.small)
             }
         }
+    }
+}
+
+private struct SupportButton: View {
+    var body: some View {
+        Link(destination: AppModel.supportURL) {
+            Label("Support Orbit on Ko-fi", systemImage: "cup.and.saucer.fill")
+                .font(.callout.weight(.medium))
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 4)
+        }
+        .buttonStyle(.bordered)
+        .controlSize(.large)
+        .tint(.orange)
+        .pointerStyle(.link)
+        .help("Orbit is made by one person. A coffee keeps it going.")
     }
 }
 

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 const { appVersion: version, appSize: size } = useRuntimeConfig().public;
 const downloadUrl = "/downloads/Orbit.dmg";
+const supportUrl = "https://ko-fi.com/simonadamcik";
 
 useSeoMeta({
   title: "Orbit — trusted HTTPS domains for your local dev servers",
@@ -364,13 +365,32 @@ const openFaq = ref<number | null>(0);
         <OrbitLogo :size="120" class="final__icon" />
         <h2>Put your localhost in orbit.</h2>
         <p>A {{ size }} download for Apple silicon Macs.</p>
-        <a :href="downloadUrl" class="btn btn--primary" download>Download Orbit {{ version }}</a>
+        <div class="cta">
+          <a :href="downloadUrl" class="btn btn--primary" download>Download Orbit {{ version }}</a>
+          <a :href="supportUrl" class="btn btn--ghost" target="_blank" rel="noopener">
+            <svg class="cup" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+              <path d="M4 8h13v5a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5V8Z" />
+              <path d="M17 9h1.5a2.5 2.5 0 0 1 0 5H17" />
+              <path
+                d="M10.5 15.2s-2.5-1.5-2.5-3.1a1.25 1.25 0 0 1 2.5-.3 1.25 1.25 0 0 1 2.5.3c0 1.6-2.5 3.1-2.5 3.1Z"
+                class="cup__heart"
+              />
+            </svg>
+            Support on Ko-fi
+          </a>
+        </div>
+        <p class="final__note">
+          Orbit is made by one person. If it saves you time, a coffee keeps it going.
+        </p>
       </section>
     </main>
 
     <footer class="foot">
       <span>© {{ new Date().getFullYear() }} Orbit</span>
       <span>Made for people who are tired of clicking through certificate warnings.</span>
+      <a :href="supportUrl" class="foot__support" target="_blank" rel="noopener"
+        >Support Orbit on Ko-fi ☕</a
+      >
     </footer>
   </div>
 </template>
@@ -1145,6 +1165,33 @@ h2 {
   margin: 14px 0 32px;
   color: var(--text-muted);
   font-size: 18px;
+}
+.final .cta {
+  margin-top: 0;
+}
+.final .final__note {
+  margin: 20px 0 0;
+  font-size: 14px;
+  color: var(--text-faint);
+}
+.cup {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.cup__heart {
+  fill: var(--sun);
+  stroke: none;
+}
+.foot__support {
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: color 0.15s;
+}
+.foot__support:hover {
+  color: var(--sun);
 }
 
 .foot {

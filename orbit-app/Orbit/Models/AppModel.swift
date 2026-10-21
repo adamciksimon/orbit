@@ -21,6 +21,8 @@ final class AppModel {
     private static let redirectPort: UInt16 = 80
     private static let sharingKey = "shareOnLocalNetwork"
 
+    static let supportURL = URL(string: "https://ko-fi.com/simonadamcik")!
+
     /// The CA certificate to install on other devices so they trust Orbit.
     static let rootCertificateURL = CertificateAuthority.rootCertificateURL
 

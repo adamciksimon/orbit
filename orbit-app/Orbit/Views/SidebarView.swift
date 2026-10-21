@@ -72,6 +72,12 @@ private struct StatusView: View {
             if let error = model.errorMessage {
                 StatusLine(color: .red, text: error)
             }
+            Divider()
+            Link(destination: AppModel.supportURL) {
+                Label("Support Orbit on Ko-fi", systemImage: "cup.and.saucer.fill")
+            }
+            .foregroundStyle(.secondary)
+            .help("Orbit is made by one person. A coffee keeps it going.")
         }
         .font(.caption)
         .frame(maxWidth: .infinity, alignment: .leading)

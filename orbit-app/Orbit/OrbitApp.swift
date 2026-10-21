@@ -20,6 +20,9 @@ struct OrbitApp: App {
         }
         .defaultSize(width: 1000, height: 750)
         .commands {
+            CommandGroup(after: .appInfo) {
+                Link("Support Orbit on Ko-fi…", destination: AppModel.supportURL)
+            }
             CommandGroup(replacing: .newItem) {
                 Button("New Project") {
                     appDelegate.model.addProject()

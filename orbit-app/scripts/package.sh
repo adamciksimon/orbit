@@ -62,7 +62,20 @@ cp -R "$APP" "$staging/"
 ln -s /Applications "$staging/Applications"
 mkdir -p "$DIST_DIR"
 rm -f "$DMG"
-hdiutil create -quiet -volname Orbit -srcfolder "$staging" -fs HFS+ -format UDZO "$DMG"
+# hdiutil sometimes fails with "Resource busy" while macOS is still scanning
+# the freshly built app (common on CI runners), so try a few times.
+for attempt in 1 2 3 4 5; do
+    if hdiutil create -volname Orbit -srcfolder "$staging" -fs HFS+ -format UDZO "$DMG" > /dev/null; then
+        break
+    fi
+    if [[ $attempt == 5 ]]; then
+        echo "Creating the disk image failed." >&2
+        exit 1
+    fi
+    echo "hdiutil failed (attempt $attempt), retrying…" >&2
+    rm -f "$DMG"
+    sleep $((attempt * 5))
+done
 
 if [[ -n "${DEVELOPER_ID:-}" ]]; then
     codesign --sign "$DEVELOPER_ID" --timestamp "$DMG"

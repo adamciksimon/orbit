@@ -7,9 +7,8 @@ name: Release app
 # it in System Settings › Privacy & Security.
 #   DEVELOPER_ID_P12           base64 of the exported Developer ID Application .p12
 #   DEVELOPER_ID_P12_PASSWORD  the .p12's export password
-#   NOTARY_KEY                 contents of the App Store Connect API key (.p8)
-#   NOTARY_KEY_ID              that key's ID
-#   NOTARY_ISSUER_ID           the App Store Connect issuer ID
+#   NOTARY_APPLE_ID            Apple ID on the Outloud US LLC team used to notarize
+#   NOTARY_PASSWORD            an app-specific password for that Apple ID
 on:
   push:
     tags: ["v*"]
@@ -21,7 +20,9 @@ jobs:
     permissions:
       contents: write
     env:
-      HAS_SIGNING: ${{ secrets.DEVELOPER_ID_P12 != '' && secrets.NOTARY_KEY != '' }}
+      HAS_SIGNING: ${{ secrets.DEVELOPER_ID_P12 != '' && secrets.NOTARY_APPLE_ID != '' }}
+      # Outloud US LLC, the team that owns the Developer ID certificate.
+      NOTARY_TEAM_ID: GH26ZAF4Y5
     steps:
       - uses: actions/checkout@v7.0.1
 
@@ -30,9 +31,8 @@ jobs:
         env:
           P12: ${{ secrets.DEVELOPER_ID_P12 }}
           P12_PASSWORD: ${{ secrets.DEVELOPER_ID_P12_PASSWORD }}
-          NOTARY_KEY: ${{ secrets.NOTARY_KEY }}
-          NOTARY_KEY_ID: ${{ secrets.NOTARY_KEY_ID }}
-          NOTARY_ISSUER_ID: ${{ secrets.NOTARY_ISSUER_ID }}
+          NOTARY_APPLE_ID: ${{ secrets.NOTARY_APPLE_ID }}
+          NOTARY_PASSWORD: ${{ secrets.NOTARY_PASSWORD }}
         run: |
           keychain="$RUNNER_TEMP/signing.keychain-db"
           keychain_password=$(uuidgen)
@@ -52,10 +52,8 @@ jobs:
           [[ -n "$identity" ]] || { echo "No Developer ID Application identity in DEVELOPER_ID_P12." >&2; exit 1; }
           echo "Signing as: $identity"
 
-          printf '%s' "$NOTARY_KEY" > "$RUNNER_TEMP/notary.p8"
           xcrun notarytool store-credentials orbit-notary --keychain "$keychain" \
-            --key "$RUNNER_TEMP/notary.p8" --key-id "$NOTARY_KEY_ID" --issuer "$NOTARY_ISSUER_ID"
-          rm "$RUNNER_TEMP/notary.p8"
+            --apple-id "$NOTARY_APPLE_ID" --password "$NOTARY_PASSWORD" --team-id "$NOTARY_TEAM_ID"
 
           {
             echo "DEVELOPER_ID=$identity"

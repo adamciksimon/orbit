@@ -2,6 +2,7 @@
 const { appVersion: version, appSize: size } = useRuntimeConfig().public;
 const downloadUrl = "/downloads/Orbit.dmg";
 const supportUrl = "https://ko-fi.com/simonadamcik";
+const repoUrl = "https://github.com/adamciksimon/orbit";
 
 useSeoMeta({
   title: "Orbit — trusted HTTPS domains for your local dev servers",
@@ -90,6 +91,10 @@ const steps = [
 
 const faqs = [
   {
+    q: "Is Orbit open source?",
+    a: "Yes. The macOS app and this website are on GitHub at github.com/adamciksimon/orbit. Issues and pull requests are welcome.",
+  },
+  {
     q: "What do I need to run it?",
     a: `A Mac with Apple silicon running macOS 15.6 or later. The download is about ${size}.`,
   },
@@ -132,6 +137,15 @@ const openFaq = ref<number | null>(0);
         <a href="#how">How it works</a>
         <a href="#faq">FAQ</a>
       </nav>
+      <a
+        :href="repoUrl"
+        class="nav__github"
+        target="_blank"
+        rel="noopener"
+        aria-label="Orbit on GitHub"
+      >
+        <GitHubMark />
+      </a>
       <a :href="downloadUrl" class="btn btn--small" download>Download</a>
     </header>
 
@@ -156,9 +170,12 @@ const openFaq = ref<number | null>(0);
             </svg>
             Download for macOS
           </a>
-          <a href="#how" class="btn btn--ghost">See how it works</a>
+          <a :href="repoUrl" class="btn btn--ghost" target="_blank" rel="noopener">
+            <GitHubMark />
+            View on GitHub
+          </a>
         </div>
-        <p class="meta">Apple silicon · macOS 15.6 or later · {{ size }}</p>
+        <p class="meta">Open source · Apple silicon · macOS 15.6 or later · {{ size }}</p>
 
         <!-- App window mock -->
         <div
@@ -378,9 +395,14 @@ const openFaq = ref<number | null>(0);
             </svg>
             Support on Ko-fi
           </a>
+          <a :href="repoUrl" class="btn btn--ghost" target="_blank" rel="noopener">
+            <GitHubMark />
+            Star on GitHub
+          </a>
         </div>
         <p class="final__note">
-          Orbit is made by one person. If it saves you time, a coffee keeps it going.
+          Orbit is open source and made by one person. If it saves you time, a coffee or a star
+          keeps it going.
         </p>
       </section>
     </main>
@@ -388,9 +410,12 @@ const openFaq = ref<number | null>(0);
     <footer class="foot">
       <span>© {{ new Date().getFullYear() }} Orbit</span>
       <span>Made for people who are tired of clicking through certificate warnings.</span>
-      <a :href="supportUrl" class="foot__support" target="_blank" rel="noopener"
-        >Support Orbit on Ko-fi ☕</a
-      >
+      <span class="foot__links">
+        <a :href="repoUrl" class="foot__support" target="_blank" rel="noopener">GitHub</a>
+        <a :href="supportUrl" class="foot__support" target="_blank" rel="noopener"
+          >Support Orbit on Ko-fi ☕</a
+        >
+      </span>
     </footer>
   </div>
 </template>
@@ -1185,6 +1210,19 @@ h2 {
   fill: var(--sun);
   stroke: none;
 }
+.foot__links {
+  display: flex;
+  gap: 20px;
+}
+.nav__github {
+  display: grid;
+  place-items: center;
+  color: var(--text-muted);
+  transition: color 0.15s;
+}
+.nav__github:hover {
+  color: var(--text);
+}
 .foot__support {
   color: var(--text-muted);
   text-decoration: none;
@@ -1250,7 +1288,7 @@ h2 {
   .nav__links {
     display: none;
   }
-  .nav .btn--small {
+  .nav__github {
     margin-left: auto;
   }
   .hero {

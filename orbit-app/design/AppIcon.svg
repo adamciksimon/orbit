@@ -1,0 +1,51 @@
+<!--
+  Orbit app icon source: the website logo (orbit-web/public/favicon.svg) laid
+  out on Apple's macOS icon grid (824×824 tile inside a 1024 canvas).
+  Render with: swift orbit-app/scripts/render-icon.swift
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+    <linearGradient id="tile" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#211d34"/>
+      <stop offset="1" stop-color="#0c0a14"/>
+    </linearGradient>
+    <radialGradient id="haze" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#ff8a5b" stop-opacity="0.16"/>
+      <stop offset="0.6" stop-color="#8f88ff" stop-opacity="0.06"/>
+      <stop offset="1" stop-color="#8f88ff" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glow">
+      <stop offset="0" stop-color="#ff8a5b" stop-opacity="0.6"/>
+      <stop offset="1" stop-color="#ff8a5b" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="sun" cx="0.4" cy="0.38" r="0.7">
+      <stop offset="0" stop-color="#ffe6a8"/>
+      <stop offset="0.45" stop-color="#ffb26b"/>
+      <stop offset="1" stop-color="#ff6b4a"/>
+    </radialGradient>
+    <radialGradient id="mint" cx="0.38" cy="0.35" r="0.75">
+      <stop offset="0" stop-color="#b4ffe6"/>
+      <stop offset="1" stop-color="#3fd9a8"/>
+    </radialGradient>
+    <radialGradient id="periwinkle" cx="0.38" cy="0.35" r="0.75">
+      <stop offset="0" stop-color="#c9c5ff"/>
+      <stop offset="1" stop-color="#7069f0"/>
+    </radialGradient>
+  </defs>
+
+  <rect x="100" y="100" width="824" height="824" rx="185" fill="url(#tile)"/>
+  <rect x="100" y="100" width="824" height="824" rx="185" fill="url(#haze)"/>
+  <rect x="101.5" y="101.5" width="821" height="821" rx="183.5" fill="none" stroke="#ffffff" stroke-opacity="0.09" stroke-width="3"/>
+
+  <g fill="none" stroke="#f2f0fa" stroke-opacity="0.2" stroke-width="18">
+    <circle cx="512" cy="512" r="309"/>
+    <circle cx="512" cy="512" r="193"/>
+  </g>
+
+  <circle cx="512" cy="512" r="190" fill="url(#glow)"/>
+  <circle cx="512" cy="512" r="100" fill="url(#sun)"/>
+
+  <circle cx="670" cy="401" r="46" fill="url(#mint)"/>
+  <circle cx="314" cy="749" r="58" fill="url(#periwinkle)"/>
+  <circle cx="252" cy="805" r="21" fill="#ffb3c7"/>
+</svg>

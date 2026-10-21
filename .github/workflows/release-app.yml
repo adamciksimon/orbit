@@ -1,6 +1,15 @@
 name: Release app
 
 # Push a version tag to release: git tag v0.2 && git push origin v0.2
+#
+# With the Developer ID secrets set, the app is signed and notarized so it opens
+# without warnings. Without them it is signed ad hoc and users have to approve
+# it in System Settings › Privacy & Security.
+#   DEVELOPER_ID_P12           base64 of the exported Developer ID Application .p12
+#   DEVELOPER_ID_P12_PASSWORD  the .p12's export password
+#   NOTARY_KEY                 contents of the App Store Connect API key (.p8)
+#   NOTARY_KEY_ID              that key's ID
+#   NOTARY_ISSUER_ID           the App Store Connect issuer ID
 on:
   push:
     tags: ["v*"]
@@ -11,15 +20,63 @@ jobs:
     runs-on: xcode-27
     permissions:
       contents: write
+    env:
+      HAS_SIGNING: ${{ secrets.DEVELOPER_ID_P12 != '' && secrets.NOTARY_KEY != '' }}
     steps:
       - uses: actions/checkout@v7.0.1
+
+      - name: Set up Developer ID signing and notarization
+        if: env.HAS_SIGNING == 'true'
+        env:
+          P12: ${{ secrets.DEVELOPER_ID_P12 }}
+          P12_PASSWORD: ${{ secrets.DEVELOPER_ID_P12_PASSWORD }}
+          NOTARY_KEY: ${{ secrets.NOTARY_KEY }}
+          NOTARY_KEY_ID: ${{ secrets.NOTARY_KEY_ID }}
+          NOTARY_ISSUER_ID: ${{ secrets.NOTARY_ISSUER_ID }}
+        run: |
+          keychain="$RUNNER_TEMP/signing.keychain-db"
+          keychain_password=$(uuidgen)
+          security create-keychain -p "$keychain_password" "$keychain"
+          security set-keychain-settings -lut 21600 "$keychain"
+          security unlock-keychain -p "$keychain_password" "$keychain"
+
+          printf '%s' "$P12" | base64 --decode > "$RUNNER_TEMP/developer-id.p12"
+          security import "$RUNNER_TEMP/developer-id.p12" -k "$keychain" -P "$P12_PASSWORD" \
+            -T /usr/bin/codesign -T /usr/bin/security
+          rm "$RUNNER_TEMP/developer-id.p12"
+          security set-key-partition-list -S apple-tool:,apple: -s -k "$keychain_password" "$keychain" > /dev/null
+          security list-keychains -d user -s "$keychain" $(security list-keychains -d user | tr -d '"')
+
+          identity=$(security find-identity -v -p codesigning "$keychain" \
+            | grep -o '"Developer ID Application: [^"]*"' | head -1 | tr -d '"')
+          [[ -n "$identity" ]] || { echo "No Developer ID Application identity in DEVELOPER_ID_P12." >&2; exit 1; }
+          echo "Signing as: $identity"
+
+          printf '%s' "$NOTARY_KEY" > "$RUNNER_TEMP/notary.p8"
+          xcrun notarytool store-credentials orbit-notary --keychain "$keychain" \
+            --key "$RUNNER_TEMP/notary.p8" --key-id "$NOTARY_KEY_ID" --issuer "$NOTARY_ISSUER_ID"
+          rm "$RUNNER_TEMP/notary.p8"
+
+          {
+            echo "DEVELOPER_ID=$identity"
+            echo "NOTARY_PROFILE=orbit-notary"
+            echo "NOTARY_KEYCHAIN=$keychain"
+          } >> "$GITHUB_ENV"
 
       - name: Build Orbit.dmg
         run: |
           export DEVELOPER_DIR="$(xcode-select -p)"
           xcodebuild -version
-          AD_HOC=1 APP_VERSION="${GITHUB_REF_NAME#v}" BUILD_NUMBER="$GITHUB_RUN_NUMBER" \
+          if [[ -z "${DEVELOPER_ID:-}" ]]; then
+            echo "::warning::No Developer ID secrets; building an ad hoc signed, unnotarized app."
+            export AD_HOC=1
+          fi
+          APP_VERSION="${GITHUB_REF_NAME#v}" BUILD_NUMBER="$GITHUB_RUN_NUMBER" \
             orbit-app/scripts/package.sh
+
+      - name: Remove signing keychain
+        if: always() && env.NOTARY_KEYCHAIN != ''
+        run: security delete-keychain "$NOTARY_KEYCHAIN"
 
       - name: Publish GitHub release
         env:

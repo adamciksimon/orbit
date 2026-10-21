@@ -10,6 +10,8 @@
 # ad hoc instead, for machines without a signing certificate (CI).
 #
 # APP_VERSION and BUILD_NUMBER override the version in the Xcode project.
+# NOTARY_KEYCHAIN points notarytool at a keychain other than the login one
+# (CI stores its credentials in a temporary keychain).
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
@@ -67,12 +69,15 @@ if [[ -n "${DEVELOPER_ID:-}" ]]; then
 fi
 
 if [[ -n "${NOTARY_PROFILE:-}" ]]; then
+    notary_args=(--keychain-profile "$NOTARY_PROFILE")
+    [[ -n "${NOTARY_KEYCHAIN:-}" ]] && notary_args+=(--keychain "$NOTARY_KEYCHAIN")
+
     echo "Notarizing (usually a few minutes)…"
-    result=$(xcrun notarytool submit "$DMG" --keychain-profile "$NOTARY_PROFILE" --wait --output-format json)
+    result=$(xcrun notarytool submit "$DMG" "${notary_args[@]}" --wait --output-format json)
     status=$(plutil -extract status raw - <<< "$result")
     if [[ "$status" != "Accepted" ]]; then
         echo "Notarization failed ($status):" >&2
-        xcrun notarytool log "$(plutil -extract id raw - <<< "$result")" --keychain-profile "$NOTARY_PROFILE" >&2
+        xcrun notarytool log "$(plutil -extract id raw - <<< "$result")" "${notary_args[@]}" >&2
         exit 1
     fi
     xcrun stapler staple "$DMG"

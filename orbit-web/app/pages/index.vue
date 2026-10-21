@@ -129,7 +129,7 @@ const openFaq = ref<number | null>(0);
 
     <header class="nav">
       <a href="#top" class="brand">
-        <OrbitLogo :size="30" />
+        <OrbitLogo :size="36" />
         <span>Orbit</span>
       </a>
       <nav class="nav__links" aria-label="Sections">
@@ -247,7 +247,7 @@ const openFaq = ref<number | null>(0);
         </div>
         <div class="wire wire--sun" aria-hidden="true"><span /></div>
         <div class="node node--orbit">
-          <OrbitLogo :size="40" />
+          <OrbitLogo :size="48" />
           <span class="node__kicker">Orbit · :443</span>
           <span class="node__note">terminates TLS, matches Host, rewrites headers</span>
         </div>
@@ -379,7 +379,7 @@ const openFaq = ref<number | null>(0);
 
       <!-- Final CTA -->
       <section class="final">
-        <OrbitLogo :size="120" class="final__icon" />
+        <OrbitLogo :size="148" class="final__icon" />
         <h2>Put your localhost in orbit.</h2>
         <p>A {{ size }} download for Apple silicon Macs.</p>
         <div class="cta">

@@ -21,7 +21,7 @@ struct ContentView: View {
             } else {
                 ContentUnavailableView {
                     VStack(spacing: 16) {
-                        OrbitMark(size: 120)
+                        OrbitMark(size: 148)
                         Text("No Project Selected")
                     }
                 } description: {

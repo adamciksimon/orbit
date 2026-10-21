@@ -31,7 +31,7 @@ struct SidebarView: View {
         .scrollContentBackground(.hidden)
         .safeAreaInset(edge: .top) {
             HStack(spacing: 8) {
-                OrbitMark(size: 36)
+                OrbitMark(size: 44)
                 Text("Orbit")
                     .font(.title2.weight(.bold))
                 Spacer()

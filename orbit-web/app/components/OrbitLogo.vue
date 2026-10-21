@@ -14,7 +14,7 @@ const id = useId();
     :class="{ 'is-animated': animated }"
     :width="size"
     :height="size"
-    viewBox="0 0 64 64"
+    viewBox="0 0 80 80"
     aria-hidden="true"
   >
     <defs>
@@ -29,19 +29,21 @@ const id = useId();
       </radialGradient>
     </defs>
 
-    <circle cx="32" cy="32" r="30" class="track" />
-    <circle cx="32" cy="32" r="20" class="track" />
+    <!-- An 80-unit box with the system centered at 40: the outer planet and
+         its moon reach about 40 units out, so nothing is clipped. -->
+    <circle cx="40" cy="40" r="30" class="track" />
+    <circle cx="40" cy="40" r="20" class="track" />
 
-    <circle cx="32" cy="32" r="15" :fill="`url(#${id}-glow)`" />
-    <circle cx="32" cy="32" r="8.5" :fill="`url(#${id}-sun)`" />
+    <circle cx="40" cy="40" r="15" :fill="`url(#${id}-glow)`" />
+    <circle cx="40" cy="40" r="8.5" :fill="`url(#${id}-sun)`" />
 
     <g class="spin spin--inner">
-      <circle cx="52" cy="32" r="3.6" fill="#5ef0c0" />
+      <circle cx="60" cy="40" r="3.6" fill="#5ef0c0" />
     </g>
     <g class="spin spin--outer">
-      <circle cx="32" cy="2" r="4.6" fill="#8f88ff" />
+      <circle cx="40" cy="10" r="4.6" fill="#8f88ff" />
       <g class="spin spin--moon">
-        <circle cx="32" cy="-6" r="1.7" fill="#ffb3c7" />
+        <circle cx="40" cy="2" r="1.7" fill="#ffb3c7" />
       </g>
     </g>
   </svg>
@@ -51,7 +53,6 @@ const id = useId();
 .logo {
   display: block;
   flex: none;
-  overflow: visible;
 }
 .track {
   fill: none;
@@ -61,7 +62,7 @@ const id = useId();
 }
 .spin {
   transform-box: view-box;
-  transform-origin: 32px 32px;
+  transform-origin: 40px 40px;
 }
 .spin--inner {
   transform: rotate(-35deg);
@@ -70,7 +71,7 @@ const id = useId();
   transform: rotate(40deg);
 }
 .spin--moon {
-  transform-origin: 32px 2px;
+  transform-origin: 40px 10px;
 }
 .is-animated .spin--inner {
   animation: orbit 6s linear infinite;

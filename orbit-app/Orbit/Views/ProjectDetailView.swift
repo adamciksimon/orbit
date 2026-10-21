@@ -24,7 +24,7 @@ struct ProjectDetailView: View {
                 Section {
                     if project.wrappedValue.settings.proxiedPaths.isEmpty {
                         VStack(spacing: 10) {
-                            OrbitMark(size: 56)
+                            OrbitMark(size: 68)
                             Text("No proxies yet. Add one to route a domain to your local server.")
                                 .foregroundStyle(.secondary)
                         }

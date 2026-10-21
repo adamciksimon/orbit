@@ -173,10 +173,12 @@ struct OrbitMark: View {
         .accessibilityHidden(true)
     }
 
-    /// Drawn on a 64-point grid, matching orbit-web/app/components/OrbitLogo.vue.
+    /// Drawn on a 64-point grid, matching orbit-web/app/components/OrbitLogo.vue,
+    /// with 8 points of margin on every side: the outer planet and its moon
+    /// swing out to about 40 points from the center.
     private func draw(in context: inout GraphicsContext, size: CGFloat, time: Double) {
-        let s = size / 64
-        let center = CGPoint(x: 32 * s, y: 32 * s)
+        let s = size / 80
+        let center = CGPoint(x: 40 * s, y: 40 * s)
 
         func disc(_ point: CGPoint, _ radius: CGFloat) -> Path {
             Path(ellipseIn: CGRect(x: point.x - radius, y: point.y - radius, width: radius * 2, height: radius * 2))

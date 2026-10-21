@@ -8,6 +8,10 @@ import SwiftUI
 struct SidebarView: View {
     @Environment(AppModel.self) private var model
 
+    /// The sidebar logo is always on screen, so it only orbits while hovered:
+    /// a constant animation would keep Orbit busy all day.
+    @State private var isHoveringLogo = false
+
     var body: some View {
         @Bindable var model = model
 
@@ -31,7 +35,8 @@ struct SidebarView: View {
         .scrollContentBackground(.hidden)
         .safeAreaInset(edge: .top) {
             HStack(spacing: 8) {
-                OrbitMark(size: 44)
+                OrbitMark(size: 44, animated: isHoveringLogo)
+                    .onHover { isHoveringLogo = $0 }
                 Text("Orbit")
                     .font(.title2.weight(.bold))
                 Spacer()

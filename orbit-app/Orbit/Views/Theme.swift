@@ -143,11 +143,23 @@ private struct SpaceField: ViewModifier {
             .focused($isFocused)
             .padding(.horizontal, 10)
             .padding(.vertical, 7)
-            .background(Theme.space.opacity(0.75), in: RoundedRectangle(cornerRadius: 9))
+            .background {
+                // Clicks in the padding land here (the text field gets its
+                // own clicks), and focus the field.
+                RoundedRectangle(cornerRadius: 9)
+                    .fill(Theme.space.opacity(0.75))
+                    .onTapGesture { isFocused = true }
+            }
             .overlay {
                 RoundedRectangle(cornerRadius: 9)
                     .strokeBorder(border, lineWidth: isFocused || isInvalid ? 1.5 : 1)
+                    .allowsHitTesting(false)
             }
+            // The text field only sets the I-beam over its text, so own the
+            // cursor for the padding too: otherwise leaving through the
+            // padding leaves the I-beam stuck until another view resets it.
+            .contentShape(RoundedRectangle(cornerRadius: 9))
+            .pointerStyle(.horizontalText)
             .shadow(color: isFocused ? Theme.planet.opacity(0.35) : .clear, radius: 6)
             .animation(.easeOut(duration: 0.15), value: isFocused)
     }
@@ -161,61 +173,94 @@ struct OrbitMark: View {
     var animated = true
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.appearsActive) private var appearsActive
+
+    /// Orbit stays open all day, so only animate while it's the active app.
+    /// The frame rate isn't capped: a cap that doesn't divide the display's
+    /// refresh rate makes the planets judder.
+    private var isMoving: Bool {
+        animated && !reduceMotion && appearsActive
+    }
 
     var body: some View {
-        TimelineView(.animation(paused: !animated || reduceMotion)) { timeline in
-            let time = animated && !reduceMotion ? timeline.date.timeIntervalSinceReferenceDate : 0
-            Canvas { context, canvasSize in
-                draw(in: &context, size: canvasSize.width, time: time)
+        ZStack {
+            // Painted once; only the planets below move each frame.
+            OrbitMarkSystem(size: size)
+            TimelineView(.animation(paused: !isMoving)) { timeline in
+                // Paused, the timeline keeps its last date, so the planets
+                // stop where they are instead of jumping back.
+                planets(time: reduceMotion ? 0 : timeline.date.timeIntervalSinceReferenceDate)
             }
         }
         .frame(width: size, height: size)
         .accessibilityHidden(true)
     }
 
-    /// Drawn on a 64-point grid, matching orbit-web/app/components/OrbitLogo.vue,
-    /// with 8 points of margin on every side: the outer planet and its moon
-    /// swing out to about 40 points from the center.
-    private func draw(in context: inout GraphicsContext, size: CGFloat, time: Double) {
+    /// Laid out on the same 80-point grid as `OrbitMarkSystem`, as offsets
+    /// from the center.
+    private func planets(time: Double) -> some View {
         let s = size / 80
-        let center = CGPoint(x: 40 * s, y: 40 * s)
 
-        func disc(_ point: CGPoint, _ radius: CGFloat) -> Path {
-            Path(ellipseIn: CGRect(x: point.x - radius, y: point.y - radius, width: radius * 2, height: radius * 2))
-        }
-        func orbit(_ radius: CGFloat, degrees: Double, around point: CGPoint) -> CGPoint {
+        func orbit(_ radius: CGFloat, degrees: Double) -> CGSize {
             let angle = degrees * .pi / 180
-            return CGPoint(x: point.x + cos(angle) * radius, y: point.y + sin(angle) * radius)
+            return CGSize(width: cos(angle) * radius * s, height: sin(angle) * radius * s)
         }
+        let inner = orbit(20, degrees: -35 + time * 60)
+        let outer = orbit(30, degrees: 130 + time * 360 / 14)
+        let moon = orbit(8, degrees: time * 120)
 
-        for radius: CGFloat in [30, 20] {
-            context.stroke(disc(center, radius * s), with: .color(.white.opacity(0.18)), lineWidth: 1.4 * s)
+        return ZStack {
+            Circle().fill(Theme.aurora)
+                .frame(width: 7.2 * s, height: 7.2 * s)
+                .offset(inner)
+            Circle().fill(Theme.planet)
+                .frame(width: 9.2 * s, height: 9.2 * s)
+                .offset(outer)
+            Circle().fill(Theme.moon)
+                .frame(width: 3.4 * s, height: 3.4 * s)
+                .offset(x: outer.width + moon.width, y: outer.height + moon.height)
         }
+    }
+}
 
-        context.fill(
-            disc(center, 15 * s),
-            with: .radialGradient(
-                Gradient(colors: [Theme.sun.opacity(0.55), Theme.sun.opacity(0)]),
-                center: center, startRadius: 0, endRadius: 15 * s
+/// The logo's still parts: orbit rings, glow and sun. Drawn on a 64-point grid,
+/// matching orbit-web/app/components/OrbitLogo.vue, with 8 points of margin on
+/// every side: the outer planet and its moon swing out to about 40 points from
+/// the center.
+private struct OrbitMarkSystem: View, Equatable {
+    let size: CGFloat
+
+    var body: some View {
+        Canvas { context, canvasSize in
+            let s = canvasSize.width / 80
+            let center = CGPoint(x: 40 * s, y: 40 * s)
+
+            func disc(_ radius: CGFloat) -> Path {
+                Path(ellipseIn: CGRect(x: center.x - radius, y: center.y - radius, width: radius * 2, height: radius * 2))
+            }
+
+            for radius: CGFloat in [30, 20] {
+                context.stroke(disc(radius * s), with: .color(.white.opacity(0.18)), lineWidth: 1.4 * s)
+            }
+            context.fill(
+                disc(15 * s),
+                with: .radialGradient(
+                    Gradient(colors: [Theme.sun.opacity(0.55), Theme.sun.opacity(0)]),
+                    center: center, startRadius: 0, endRadius: 15 * s
+                )
             )
-        )
-        context.fill(
-            disc(center, 8.5 * s),
-            with: .radialGradient(
-                Gradient(stops: [
-                    .init(color: Color(hex: 0xFFE6A8), location: 0),
-                    .init(color: Color(hex: 0xFFB26B), location: 0.45),
-                    .init(color: Color(hex: 0xFF6B4A), location: 1),
-                ]),
-                center: CGPoint(x: center.x - 2 * s, y: center.y - 2 * s), startRadius: 0, endRadius: 12 * s
+            context.fill(
+                disc(8.5 * s),
+                with: .radialGradient(
+                    Gradient(stops: [
+                        .init(color: Color(hex: 0xFFE6A8), location: 0),
+                        .init(color: Color(hex: 0xFFB26B), location: 0.45),
+                        .init(color: Color(hex: 0xFF6B4A), location: 1),
+                    ]),
+                    center: CGPoint(x: center.x - 2 * s, y: center.y - 2 * s), startRadius: 0, endRadius: 12 * s
+                )
             )
-        )
-
-        let inner = orbit(20 * s, degrees: -35 + time * 60, around: center)
-        context.fill(disc(inner, 3.6 * s), with: .color(Theme.aurora))
-
-        let outer = orbit(30 * s, degrees: 130 + time * 360 / 14, around: center)
-        context.fill(disc(outer, 4.6 * s), with: .color(Theme.planet))
-        context.fill(disc(orbit(8 * s, degrees: time * 120, around: outer), 1.7 * s), with: .color(Theme.moon))
+        }
+        .frame(width: size, height: size)
     }
 }

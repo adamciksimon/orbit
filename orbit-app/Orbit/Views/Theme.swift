@@ -196,29 +196,33 @@ struct OrbitMark: View {
         .accessibilityHidden(true)
     }
 
-    /// Laid out on the same 80-point grid as `OrbitMarkSystem`, as offsets
-    /// from the center.
+    /// Laid out on the same 80-point grid as `OrbitMarkSystem`. Each planet
+    /// sits at a fixed distance from its center and its whole orbit is rotated:
+    /// rotation isn't rounded to the pixel grid the way moving a view is, so
+    /// even the slow outer planet glides instead of stepping a pixel at a time.
     private func planets(time: Double) -> some View {
         let s = size / 80
-
-        func orbit(_ radius: CGFloat, degrees: Double) -> CGSize {
-            let angle = degrees * .pi / 180
-            return CGSize(width: cos(angle) * radius * s, height: sin(angle) * radius * s)
-        }
-        let inner = orbit(20, degrees: -35 + time * 60)
-        let outer = orbit(30, degrees: 130 + time * 360 / 14)
-        let moon = orbit(8, degrees: time * 120)
 
         return ZStack {
             Circle().fill(Theme.aurora)
                 .frame(width: 7.2 * s, height: 7.2 * s)
-                .offset(inner)
-            Circle().fill(Theme.planet)
-                .frame(width: 9.2 * s, height: 9.2 * s)
-                .offset(outer)
-            Circle().fill(Theme.moon)
-                .frame(width: 3.4 * s, height: 3.4 * s)
-                .offset(x: outer.width + moon.width, y: outer.height + moon.height)
+                .offset(x: 20 * s)
+                .frame(width: size, height: size)
+                .rotationEffect(.degrees(-35 + time * 60))
+
+            ZStack {
+                Circle().fill(Theme.planet)
+                    .frame(width: 9.2 * s, height: 9.2 * s)
+                Circle().fill(Theme.moon)
+                    .frame(width: 3.4 * s, height: 3.4 * s)
+                    .offset(x: 8 * s)
+                    .frame(width: 20 * s, height: 20 * s)
+                    .rotationEffect(.degrees(time * 120))
+            }
+            .frame(width: 20 * s, height: 20 * s)
+            .offset(x: 30 * s)
+            .frame(width: size, height: size)
+            .rotationEffect(.degrees(130 + time * 360 / 14))
         }
     }
 }

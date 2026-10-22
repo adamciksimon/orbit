@@ -6,7 +6,7 @@
 import Foundation
 
 /// Persisted app state. The JSON shape matches the original Tauri app's
-/// `~/.localcan/projects.bin`, so existing configs keep working.
+/// `~/.orbit/projects.bin`, so existing configs keep working.
 nonisolated struct ProjectsConfig: Codable, Equatable, Sendable {
     var selectedProjectId: Int?
     var projects: [Project]

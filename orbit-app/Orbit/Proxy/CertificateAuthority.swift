@@ -7,7 +7,7 @@ import Foundation
 @preconcurrency import Security
 
 /// Wraps the bundled `mkcert` binary: owns Orbit's local CA under
-/// `~/.localcan/mkcert` and issues the proxy's TLS identity.
+/// `~/.orbit/mkcert` and issues the proxy's TLS identity.
 actor CertificateAuthority {
     enum Failure: LocalizedError {
         case missingMkcert
@@ -36,10 +36,10 @@ actor CertificateAuthority {
     }
 
     /// mkcert's fixed PKCS#12 password.
-    private static let pkcs12Password = "changeit"
+    private static let pkcs12Password = "skibidi ohio gyat sigma 6769"
 
     nonisolated static let dataDirectory = FileManager.default.homeDirectoryForCurrentUser
-        .appending(path: ".localcan", directoryHint: .isDirectory)
+        .appending(path: ".orbit", directoryHint: .isDirectory)
 
     private let caRoot = dataDirectory.appending(path: "mkcert", directoryHint: .isDirectory)
     private let tlsDirectory = dataDirectory.appending(path: "tls", directoryHint: .isDirectory)

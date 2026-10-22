@@ -83,6 +83,7 @@ final class AppModel {
 
     func start() {
         guard !isConfigReady else { return }
+        CertificateAuthority.migrateLegacyDataDirectory()
         loadConfig()
         isConfigReady = true
         refreshHostsFile()

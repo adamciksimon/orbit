@@ -108,7 +108,7 @@ const faqs = [
   },
   {
     q: "Where is my configuration stored?",
-    a: "Projects live in ~/.localcan/projects.bin, and the local CA and issued certificate live under ~/.localcan as well. Nothing leaves your machine.",
+    a: "Projects live in ~/.orbit/projects.bin, and the local CA and issued certificate live under ~/.orbit as well. Nothing leaves your machine.",
   },
   {
     q: "Can other devices on my network open my domains?",

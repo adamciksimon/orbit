@@ -5,8 +5,8 @@
 
 import Foundation
 
-/// Persisted app state. The JSON shape matches the original Tauri app's
-/// `~/.orbit/projects.bin`, so existing configs keep working.
+/// Persisted app state in `~/.orbit/projects.bin`. The JSON shape matches the
+/// original Tauri app's `projects.bin`, so existing configs keep working.
 nonisolated struct ProjectsConfig: Codable, Equatable, Sendable {
     var selectedProjectId: Int?
     var projects: [Project]

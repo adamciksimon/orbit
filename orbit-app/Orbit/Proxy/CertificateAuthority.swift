@@ -35,11 +35,28 @@ actor CertificateAuthority {
         }
     }
 
-    /// mkcert's fixed PKCS#12 password.
-    private static let pkcs12Password = "skibidi ohio gyat sigma 6769"
+    /// mkcert's fixed PKCS#12 password. mkcert always writes `-pkcs12` files
+    /// with it and has no option to change it, so this must stay "changeit"
+    /// or the proxy can't read its own certificate.
+    private static let pkcs12Password = "changeit"
 
     nonisolated static let dataDirectory = FileManager.default.homeDirectoryForCurrentUser
         .appending(path: ".orbit", directoryHint: .isDirectory)
+
+    /// Where Orbit kept its data before version 0.4.2.
+    private nonisolated static let legacyDataDirectory = FileManager.default.homeDirectoryForCurrentUser
+        .appending(path: ".localcan", directoryHint: .isDirectory)
+
+    /// Moves data from the old `~/.localcan` folder to `~/.orbit` once, so
+    /// existing projects and the already trusted CA carry over without a new
+    /// trust prompt. Leaves everything alone if `~/.orbit` already exists.
+    nonisolated static func migrateLegacyDataDirectory() {
+        let fileManager = FileManager.default
+        guard fileManager.fileExists(atPath: legacyDataDirectory.path),
+              !fileManager.fileExists(atPath: dataDirectory.path)
+        else { return }
+        try? fileManager.moveItem(at: legacyDataDirectory, to: dataDirectory)
+    }
 
     private let caRoot = dataDirectory.appending(path: "mkcert", directoryHint: .isDirectory)
     private let tlsDirectory = dataDirectory.appending(path: "tls", directoryHint: .isDirectory)

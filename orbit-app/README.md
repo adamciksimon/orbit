@@ -6,9 +6,9 @@ It is a native Swift/SwiftUI rewrite of the earlier Tauri + Rust version.
 
 ## How it works
 
-- **Projects** are stored in `~/.localcan/projects.bin`. The JSON format is the same as before, so existing configs load unchanged.
+- **Projects** are stored in `~/.orbit/projects.bin`. The JSON format is the same as before, so existing configs load unchanged. Versions before 0.4.2 used `~/.localcan`; Orbit moves it to `~/.orbit` on first launch.
 - **Proxy**: an in-process HTTPS reverse proxy (Network.framework) listens on port 443. macOS lets unprivileged processes bind 443 on all interfaces, so no root process is needed at all. Each request's `Host` is matched to a route and rewritten to `localhost:<port>` (plus `X-Forwarded-Host`/`X-Forwarded-Proto`), so dev servers that check the host (Vite, webpack) accept it. Responses stream through, so SSE works, and WebSocket upgrades are tunneled.
-- **Certificates**: the bundled `mkcert` (`Vendor/mkcert`, embedded into `Contents/MacOS`) manages a local CA in `~/.localcan/mkcert` and issues `~/.localcan/tls/proxy.p12` for every configured domain. The certificate is reissued automatically when domains change. On first launch Orbit adds the CA to your login keychain and marks it trusted for your user. macOS asks for your password or Touch ID. If you dismiss the prompt, use **Trust Certificate…** in the sidebar to try again.
+- **Certificates**: the bundled `mkcert` (`Vendor/mkcert`, embedded into `Contents/MacOS`) manages a local CA in `~/.orbit/mkcert` and issues `~/.orbit/tls/proxy.p12` for every configured domain. The certificate is reissued automatically when domains change. On first launch Orbit adds the CA to your login keychain and marks it trusted for your user. macOS asks for your password or Touch ID. If you dismiss the prompt, use **Trust Certificate…** in the sidebar to try again.
 - **DNS**: `.local` domains are published to this Mac through mDNSResponder (local-only A and AAAA records → 127.0.0.1 and ::1), and the proxy only accepts loopback connections. A single-word domain like `portfolio` is served as `portfolio.local`. Other domains, like `app.example.com`, can be added to a marked Orbit block in `/etc/hosts` with **Add to /etc/hosts…**, which asks for an admin password.
 - **Sharing**: with **Share on local network** on, the `.local` records are announced on Wi-Fi and Ethernet with this Mac's addresses there (updated when the network changes), and the proxy accepts connections from other devices. Those devices need Orbit's root certificate (**Share Root Certificate…**) to trust it. `/etc/hosts` domains stay local to this Mac.
 
@@ -20,7 +20,7 @@ Open `Orbit.xcodeproj` in Xcode and run the `Orbit` scheme, or build from the co
 xcodebuild -project Orbit.xcodeproj -scheme Orbit build
 ```
 
-The app is not sandboxed: it runs `mkcert`, writes to `~/.localcan`, and listens on port 443.
+The app is not sandboxed: it runs `mkcert`, writes to `~/.orbit`, and listens on port 443.
 
 ## Releasing
 

@@ -1,2 +1,6 @@
-User-Agent: *
-Disallow:
+# Everyone is welcome to read, index and cite this site, including AI crawlers
+# (GPTBot, ClaudeBot, PerplexityBot, Google-Extended and others).
+User-agent: *
+Allow: /
+
+Sitemap: https://orbit.simon-studio.cc/sitemap.xml

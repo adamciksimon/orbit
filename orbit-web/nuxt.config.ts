@@ -15,8 +15,11 @@ export default defineNuxtConfig({
     head: {
       htmlAttrs: { lang: "en" },
       link: [
+        // Tells AI tools where the plain-text summary of the site is.
+        { rel: "alternate", type: "text/plain", href: "/llms.txt", title: "llms.txt" },
+        { rel: "icon", href: "/favicon.ico", sizes: "32x32" },
         { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" },
-        { rel: "apple-touch-icon", href: "/orbit-mark.png" },
+        { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
         { rel: "preconnect", href: "https://fonts.googleapis.com" },
         { rel: "preconnect", href: "https://fonts.gstatic.com", crossorigin: "" },
         {
@@ -27,4 +30,15 @@ export default defineNuxtConfig({
       meta: [{ name: "theme-color", content: "#0b0a14" }],
     },
   },
+  // Static generation: `vp run generate` renders the page to a full HTML file (text, metadata, structured data), so
+  // search engines and AI crawlers can read it without running JavaScript. `crawlLinks` finds pages by following
+  // links; the routes below make sure nothing is missed, including the generated sitemap.xml and llms.txt.
+  nitro: {
+    prerender: {
+      crawlLinks: true,
+      autoSubfolderIndex: false,
+      routes: ["/", "/sitemap.xml", "/llms.txt"],
+    },
+  },
+  ssr: true,
 });

@@ -17,9 +17,7 @@ usePageSeo({
   schema: [appSchema(String(version), String(size)), sourceCodeSchema(), faqSchema(String(size))],
 });
 
-// Mirrors Domain.served / Domain.isValid in the app.
-const hostnamePattern = /^(\*\.)?[0-9a-z_-]([0-9a-z._-]*[0-9a-z_-])?$/;
-
+// Mirrors Domain.served in the app.
 const domainInput = ref("storefront");
 const portInput = ref("3000");
 
@@ -27,22 +25,6 @@ const served = computed(() => {
   const normalized = domainInput.value.trim().toLowerCase().replace(/\.+$/, "");
   if (!normalized || normalized.includes(".") || normalized === "localhost") return normalized;
   return `${normalized}.local`;
-});
-const port = computed(() => Number(portInput.value));
-const isValidDomain = computed(() => hostnamePattern.test(served.value));
-const isValidPort = computed(
-  () => Number.isInteger(port.value) && port.value >= 1 && port.value <= 65535,
-);
-const resolution = computed(() => {
-  if (!isValidDomain.value)
-    return { tone: "warn", text: "Not a valid hostname; this proxy is inactive." };
-  if (!isValidPort.value) return { tone: "warn", text: "Port must be between 1 and 65535." };
-  if (served.value.endsWith(".local") || served.value === "localhost")
-    return { tone: "ok", text: "Resolves instantly over mDNS. Nothing else to set up." };
-  return {
-    tone: "info",
-    text: "Orbit adds this domain to its own /etc/hosts block (one admin prompt).",
-  };
 });
 
 const openFaq = ref<number | null>(0);
@@ -273,7 +255,6 @@ const openFaq = ref<number | null>(0);
           </ol>
 
           <div class="play">
-            <p class="play__label">Try it: this is exactly how Orbit reads a proxy</p>
             <div class="play__fields">
               <label>
                 <span>Domain</span>
@@ -294,7 +275,6 @@ const openFaq = ref<number | null>(0);
               <span class="play__arrow">→</span>
               <code class="play__target">http://localhost:{{ portInput || "…" }}</code>
             </div>
-            <p class="play__note" :class="`is-${resolution.tone}`">{{ resolution.text }}</p>
           </div>
         </div>
       </section>
@@ -1007,11 +987,6 @@ h2 {
   border: 1px solid var(--line-strong);
   box-shadow: 0 30px 60px -30px rgb(0 0 0 / 0.8);
 }
-.play__label {
-  margin: 0 0 18px;
-  font-size: 13px;
-  color: var(--text-faint);
-}
 .play__fields {
   display: flex;
   gap: 12px;
@@ -1069,26 +1044,6 @@ h2 {
 }
 .play__target {
   color: var(--planet);
-}
-.play__note {
-  display: flex;
-  gap: 8px;
-  margin: 14px 0 0;
-  font-size: 14px;
-}
-.play__note::before {
-  content: "●";
-  font-size: 10px;
-  line-height: 22px;
-}
-.play__note.is-ok {
-  color: var(--aurora);
-}
-.play__note.is-info {
-  color: var(--planet);
-}
-.play__note.is-warn {
-  color: #fb923c;
 }
 
 /* ---------- faq ---------- */

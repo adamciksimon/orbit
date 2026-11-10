@@ -1,75 +1,45 @@
-# Nuxt Minimal Starter
+# Orbit website
 
-Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+The product site for [Orbit](../orbit-app), live at [orbit.simon-studio.cc](https://orbit.simon-studio.cc). It's a
+Nuxt app that runs on Cloudflare Workers; every page is prerendered, so Cloudflare serves it as static files and the
+Worker only runs for anything else (like a 404).
 
-## Setup
-
-Make sure to install dependencies:
-
-```bash
-# npm
-npm install
-
-# pnpm
-pnpm install
-
-# yarn
-yarn install
-
-# bun
-bun install
-```
-
-## Development Server
-
-Start the development server on `http://localhost:3000`:
+## Development
 
 ```bash
-# npm
-npm run dev
-
-# pnpm
-pnpm dev
-
-# yarn
-yarn dev
-
-# bun
-bun run dev
+vp install
+vp run dev
 ```
 
-## Production
+The download button points at `/downloads/Orbit.dmg`, which isn't in git. To try it locally, put a DMG there (for
+example `gh release download --pattern Orbit.dmg --dir public/downloads`).
 
-Build the application for production:
+## Checks
 
 ```bash
-# npm
-npm run build
-
-# pnpm
-pnpm build
-
-# yarn
-yarn build
-
-# bun
-bun run build
+vp check
 ```
 
-Locally preview production build:
+## Build and preview
 
 ```bash
-# npm
-npm run preview
-
-# pnpm
-pnpm preview
-
-# yarn
-yarn preview
-
-# bun
-bun run preview
+vp run build
+vp exec wrangler dev --local
 ```
 
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+`vp run build` prerenders the pages, `sitemap.xml` and `llms.txt` into `.output/public` and builds the Worker into
+`.output/server`. `wrangler dev` runs both the way Cloudflare does.
+
+## Deploy
+
+Pushing changes to `orbit-web/` on `main` (or releasing a new app version) runs
+[`.github/workflows/deploy-web.yml`](../.github/workflows/deploy-web.yml): it downloads the latest release's DMG, builds
+the site with that version and size, and deploys it with `wrangler deploy` (config in [`wrangler.jsonc`](wrangler.jsonc)).
+It needs the `CLOUDFLARE_API_TOKEN` repository secret.
+
+To deploy by hand:
+
+```bash
+vp run build
+vp exec wrangler deploy
+```

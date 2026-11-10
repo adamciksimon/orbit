@@ -167,6 +167,27 @@ const openFaq = ref<number | null>(0);
         </div>
       </section>
 
+      <!-- Video -->
+      <section id="video" class="section watch" aria-labelledby="watch-title">
+        <div class="section__head watch__head">
+          <p class="kicker">See it in action</p>
+          <h2 id="watch-title">From localhost to HTTPS in forty seconds.</h2>
+        </div>
+        <div class="watch__frame">
+          <!-- preload="none": only the poster loads with the page; the 8 MB video waits for play. -->
+          <video
+            controls
+            playsinline
+            preload="none"
+            poster="/video/orbit-ad-poster.jpg"
+            width="1920"
+            height="1080"
+          >
+            <source src="/video/orbit-ad.mp4" type="video/mp4" />
+          </video>
+        </div>
+      </section>
+
       <!-- Flow -->
       <section class="flow" aria-label="How a request travels through Orbit">
         <div class="node">
@@ -747,6 +768,31 @@ h1 {
 .arrow,
 .muted {
   color: var(--text-faint);
+}
+
+/* ---------- video ---------- */
+.watch__head {
+  margin-inline: auto;
+  margin-bottom: 36px;
+  text-align: center;
+}
+.watch__frame {
+  max-width: 880px;
+  margin: 0 auto;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #000;
+  border: 1px solid var(--line-strong);
+  box-shadow:
+    0 0 0 1px rgb(0 0 0 / 0.5),
+    0 40px 80px -20px rgb(0 0 0 / 0.7),
+    0 0 120px -30px rgb(143 136 255 / 0.25);
+}
+.watch__frame video {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
 }
 
 /* ---------- flow ---------- */

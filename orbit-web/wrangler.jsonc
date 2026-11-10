@@ -3,10 +3,14 @@
   "name": "orbit",
   "account_id": "0dd506d1029173a13a7aa15e934681da",
   "compatibility_date": "2026-10-01",
-  // Static site: `nuxt generate` output, served straight from Workers static assets.
+  "compatibility_flags": ["nodejs_compat"],
+  // The Nuxt server (`vp run build`, Nitro's cloudflare-module preset).
+  "main": ".output/server/index.mjs",
+  // Prerendered pages and build assets. Requests that match a file are served directly without running the Worker;
+  // everything else reaches Nuxt, which renders 404s itself (with a real 404 status).
   "assets": {
     "directory": ".output/public",
-    "not_found_handling": "404-page",
+    "binding": "ASSETS",
   },
   "routes": [{ "pattern": "orbit.simon-studio.cc", "custom_domain": true }],
 }

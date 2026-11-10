@@ -45,9 +45,14 @@ jobs:
           echo "NUXT_PUBLIC_APP_SIZE=$(awk -v b="$bytes" 'BEGIN { printf "%.1f MB", b / 1048576 }')" >> "$GITHUB_ENV"
           echo "Serving Orbit $tag ($bytes bytes)"
 
-      - run: vp run generate
+      - run: vp run build
 
+      # The version and size are also passed to the Worker, so pages it renders at request time (like the 404 page)
+      # match the prerendered ones.
       - name: Deploy to Cloudflare Workers
-        run: vp exec wrangler deploy
+        run: |
+          vp exec wrangler deploy \
+            --var "NUXT_PUBLIC_APP_VERSION:$NUXT_PUBLIC_APP_VERSION" \
+            --var "NUXT_PUBLIC_APP_SIZE:$NUXT_PUBLIC_APP_SIZE"
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}

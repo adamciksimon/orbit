@@ -174,7 +174,8 @@ const openFaq = ref<number | null>(0);
           <h2 id="watch-title">From localhost to HTTPS in forty seconds.</h2>
         </div>
         <div class="watch__frame">
-          <!-- preload="none": only the poster loads with the page; the 8 MB video waits for play. -->
+          <!-- preload="none": only the poster loads with the page; the 8 MB video waits for play. Served from
+               /media/ (server/routes/media) for the range requests Safari needs to play video. -->
           <video
             controls
             playsinline
@@ -183,7 +184,7 @@ const openFaq = ref<number | null>(0);
             width="1920"
             height="1080"
           >
-            <source src="/video/orbit-ad.mp4" type="video/mp4" />
+            <source :src="'/media/orbit-ad.mp4'" type="video/mp4" />
           </video>
         </div>
       </section>
